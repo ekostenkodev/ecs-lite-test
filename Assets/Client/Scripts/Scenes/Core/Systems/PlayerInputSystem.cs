@@ -1,17 +1,29 @@
 using Kadoy.DoorTest.Core.Input;
+using Kadoy.DoorTest.Core.Scene;
 using Leopotam.EcsLite;
 using UnityEngine;
+using Zenject;
 
 namespace Kadoy.DoorTest.Core.Interact
 {
     public class PlayerInputSystem :IEcsRunSystem
     {
-        public void Run(EcsSystems systems)
+        private SceneData _sceneData;
+        private EcsWorld _world;
+        
+        [Inject]
+        private void Construct(EcsWorld world, SceneData sceneData)
         {
-            CheckMouseInput(systems.GetWorld());
+            _world = world;
+            _sceneData = sceneData;
         }
 
-        private void CheckMouseInput(EcsWorld world)
+        public void Run(EcsSystems systems)
+        {
+            CheckMouseInput();
+        }
+
+        private void CheckMouseInput()
         {
             if (false == UnityEngine.Input.GetMouseButtonDown(0))
             {
@@ -19,15 +31,15 @@ namespace Kadoy.DoorTest.Core.Interact
             }
 
             var mousePosition = UnityEngine.Input.mousePosition;
-            var ray = Camera.main.ScreenPointToRay(mousePosition);
+            var ray = _sceneData.MainCamera.ScreenPointToRay(mousePosition);
             
-            if (false == Physics.Raycast(ray, out var hit, ~0))
+            if (false == Physics.Raycast(ray, out var hit, LayerMasks.Floor))
             {
                 return;
             }
 
-            var entity = world.NewEntity();
-            ref var mouseInputEvent = ref world.GetPool<InputMouseComponent>().Add(entity);
+            var entity = _world.NewEntity();
+            ref var mouseInputEvent = ref _world.GetPool<InputMouseComponent>().Add(entity);
             
             mouseInputEvent.Position = hit.point;
         }

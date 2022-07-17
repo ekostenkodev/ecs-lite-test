@@ -8,15 +8,23 @@ namespace Kadoy.DoorTest.Core.Movement
     {
         private const float ArriveProximity = 0.01f;
         
-        public void Run(EcsSystems systems)
+        private EcsWorld _world;
+
+        [Inject]
+        private void Construct(EcsWorld world)
         {
-            ApplyMoveTo(systems.GetWorld());
+            _world = world;
         }
 
-        private void ApplyMoveTo(EcsWorld world)
+        public void Run(EcsSystems systems)
+        {
+            ApplyMoveTo();
+        }
+
+        private void ApplyMoveTo()
         {
             var deltaTime = Time.deltaTime;
-            var movableFilter = world
+            var movableFilter = _world
                 .Filter<MovableComponent>()
                 .Inc<PositionComponent>()
                 .Inc<MoveToComponent>()
@@ -24,16 +32,16 @@ namespace Kadoy.DoorTest.Core.Movement
             
             foreach (var entity in movableFilter)
             {
-                ref var currentPosition = ref world.GetPool<PositionComponent>().Get(entity);
-                var moveTo = world.GetPool<MoveToComponent>().Get(entity);
-                var movable = world.GetPool<MovableComponent>().Get(entity);
+                ref var currentPosition = ref _world.GetPool<PositionComponent>().Get(entity);
+                var moveTo = _world.GetPool<MoveToComponent>().Get(entity);
+                var movable = _world.GetPool<MovableComponent>().Get(entity);
                 
                 var distance = moveTo.Value - currentPosition.Value;
                 var isReached = distance.sqrMagnitude <= ArriveProximity;
 
                 if (isReached)
                 {
-                    world.GetPool<MoveToComponent>().Del(entity);
+                    _world.GetPool<MoveToComponent>().Del(entity);
                     
                     continue;
                 }

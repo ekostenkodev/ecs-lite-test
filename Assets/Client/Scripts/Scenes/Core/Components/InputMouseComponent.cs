@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Kadoy.DoorTest.Core.Input
 {
-    public struct InputMouseComponent
+    internal struct InputMouseComponent
     {
         public Vector3 Position;
     }
